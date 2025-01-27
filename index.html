@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>all pay wanzofc</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Aplikasi QRIS</h1>
+  </header>
+  <main>
+    <section id="login">
+      <h2>Login</h2>
+      <form id="login-form">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email"><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password"><br><br>
+        <button id="login-button">Login</button>
+      </form>
+    </section>
+    <section id="top-up">
+      <h2>Top-up</h2>
+      <form id="top-up-form">
+        <label for="nominal">Nominal:</label>
+        <input type="number" id="nominal" name="nominal"><br><br>
+        <button id="top-up-button">Top-up</button>
+      </form>
+    </section>
+    <section id="transfer">
+      <h2>Transfer</h2>
+      <form id="transfer-form">
+        <label for="nominal">Nominal:</label>
+        <input type="number" id="nominal" name="nominal"><br><br>
+        <button id="transfer-button">Transfer</button>
+      </form>
+    </section>
+    <section id="saldo">
+      <h2>Saldo</h2>
+      <p id="saldo-text"></p>
+    </section>
+    <section id="qris">
+      <h2>QRIS</h2>
+      <img id="qris-image" src="qris.png" alt="QRIS">
+      <p id="qris-text">Scan QRIS di atas untuk melakukan transaksi</p>
+    </section>
+  </main>
+  <script>const loginForm = document.getElementById('login-form');
+const topUpForm = document.getElementById('top-up-form');
+const transferForm = document.getElementById('transfer-form');
+const saldoText = document.getElementById('saldo-text');
+const qrisImage = document.getElementById('qris-image');
+
+loginForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  // Lakukan login
+  fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.token) {
+        // Simpan token
+        localStorage.setItem('token', data.token);
+        // Tampilkan saldo
+        fetch('/saldo', {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${data.token}` },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            saldoText.textContent = `Saldo: ${data.saldo}`;
+          })
+          .catch((err) => console.error(err));
+      } else {
+        alert('Email atau password salah');
+      }
+    })
+    .catch((err) => console.error(err));
+});
+
+topUpForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const nominal = document.getElementById('nominal').value;
+  // Lakukan top-up
+  fetch('/top-up', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify({ nominal }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.message) {
+        alert(data.message);
+      } else {
+        alert('Top-up gagal');
+      }
+    })
+    .catch((err) => console.error(err));
+});
+</script>
+</body>
+</html>
